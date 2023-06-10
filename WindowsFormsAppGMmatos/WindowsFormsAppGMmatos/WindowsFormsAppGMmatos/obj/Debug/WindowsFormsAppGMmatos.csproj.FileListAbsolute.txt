@@ -1,0 +1,12 @@
+C:\BTS SLAM\WindowsFormsAppGMmatos\WindowsFormsAppGMmatos\obj\Debug\WindowsFormsAppGMmatos.csproj.AssemblyReference.cache
+C:\BTS SLAM\WindowsFormsAppGMmatos\WindowsFormsAppGMmatos\obj\Debug\WindowsFormsAppGMmatos.csproj.SuggestedBindingRedirects.cache
+C:\BTS SLAM\WindowsFormsAppGMmatos\WindowsFormsAppGMmatos\obj\Debug\WindowsFormsAppGMmatos.FormGenerale.resources
+C:\BTS SLAM\WindowsFormsAppGMmatos\WindowsFormsAppGMmatos\obj\Debug\WindowsFormsAppGMmatos.Formclient.resources
+C:\BTS SLAM\WindowsFormsAppGMmatos\WindowsFormsAppGMmatos\obj\Debug\WindowsFormsAppGMmatos.Properties.Resources.resources
+C:\BTS SLAM\WindowsFormsAppGMmatos\WindowsFormsAppGMmatos\obj\Debug\WindowsFormsAppGMmatos.csproj.GenerateResource.cache
+C:\BTS SLAM\WindowsFormsAppGMmatos\WindowsFormsAppGMmatos\obj\Debug\WindowsFormsAppGMmatos.csproj.CoreCompileInputs.cache
+C:\BTS SLAM\WindowsFormsAppGMmatos\WindowsFormsAppGMmatos\bin\Debug\WindowsFormsAppGMmatos.exe.config
+C:\BTS SLAM\WindowsFormsAppGMmatos\WindowsFormsAppGMmatos\bin\Debug\WindowsFormsAppGMmatos.exe
+C:\BTS SLAM\WindowsFormsAppGMmatos\WindowsFormsAppGMmatos\bin\Debug\WindowsFormsAppGMmatos.pdb
+C:\BTS SLAM\WindowsFormsAppGMmatos\WindowsFormsAppGMmatos\obj\Debug\WindowsFormsAppGMmatos.exe
+C:\BTS SLAM\WindowsFormsAppGMmatos\WindowsFormsAppGMmatos\obj\Debug\WindowsFormsAppGMmatos.pdb

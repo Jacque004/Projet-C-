@@ -1,0 +1,95 @@
+<?php
+require __DIR__ . '/config.php';
+
+$method = $_SERVER['REQUEST_METHOD'];
+$id = isset($_GET['id']) ? (int) $_GET['id'] : null;
+
+function normalize_client(array $row): array
+{
+    return [
+        'id' => (int) $row['id'],
+        'nom' => $row['nom'],
+        'prenom' => $row['prenom'],
+        'email' => $row['email'],
+        'telephone' => $row['telephone'],
+        'adresse' => $row['adresse'],
+    ];
+}
+
+try {
+    if ($method === 'GET') {
+        if ($id) {
+            $stmt = $pdo->prepare('SELECT * FROM clients WHERE id = ?');
+            $stmt->execute([$id]);
+            $row = $stmt->fetch();
+            if (!$row) {
+                respond(['error' => 'Client introuvable'], 404);
+            }
+            respond(normalize_client($row));
+        }
+
+        $rows = $pdo->query('SELECT * FROM clients ORDER BY nom, prenom')->fetchAll();
+        respond(array_map('normalize_client', $rows));
+    }
+
+    if ($method === 'POST') {
+        $data = json_body();
+        $nom = trim($data['nom'] ?? '');
+        $prenom = trim($data['prenom'] ?? '');
+        if ($nom === '' || $prenom === '') {
+            respond(['error' => 'Nom et prénom obligatoires'], 400);
+        }
+
+        $stmt = $pdo->prepare(
+            'INSERT INTO clients (nom, prenom, email, telephone, adresse) VALUES (?, ?, ?, ?, ?)'
+        );
+        $stmt->execute([
+            $nom,
+            $prenom,
+            trim($data['email'] ?? '') ?: null,
+            trim($data['telephone'] ?? '') ?: null,
+            trim($data['adresse'] ?? '') ?: null,
+        ]);
+
+        respond(['id' => (int) $pdo->lastInsertId()], 201);
+    }
+
+    if ($method === 'PUT') {
+        if (!$id) {
+            respond(['error' => 'Id requis'], 400);
+        }
+        $data = json_body();
+        $nom = trim($data['nom'] ?? '');
+        $prenom = trim($data['prenom'] ?? '');
+        if ($nom === '' || $prenom === '') {
+            respond(['error' => 'Nom et prénom obligatoires'], 400);
+        }
+
+        $stmt = $pdo->prepare(
+            'UPDATE clients SET nom = ?, prenom = ?, email = ?, telephone = ?, adresse = ? WHERE id = ?'
+        );
+        $stmt->execute([
+            $nom,
+            $prenom,
+            trim($data['email'] ?? '') ?: null,
+            trim($data['telephone'] ?? '') ?: null,
+            trim($data['adresse'] ?? '') ?: null,
+            $id,
+        ]);
+
+        respond(['ok' => true]);
+    }
+
+    if ($method === 'DELETE') {
+        if (!$id) {
+            respond(['error' => 'Id requis'], 400);
+        }
+        $stmt = $pdo->prepare('DELETE FROM clients WHERE id = ?');
+        $stmt->execute([$id]);
+        respond(['ok' => true]);
+    }
+
+    respond(['error' => 'Méthode non supportée'], 405);
+} catch (Throwable $e) {
+    respond(['error' => $e->getMessage()], 500);
+}

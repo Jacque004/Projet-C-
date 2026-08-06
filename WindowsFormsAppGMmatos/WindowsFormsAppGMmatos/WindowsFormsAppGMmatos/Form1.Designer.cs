@@ -68,7 +68,6 @@
             this.Name = "FormGenerale";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Gestion Matos 13";
-            this.Load += new System.EventHandler(this.FormGenerale_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
         }

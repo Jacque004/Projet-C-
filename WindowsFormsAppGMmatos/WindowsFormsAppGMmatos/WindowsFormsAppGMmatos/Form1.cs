@@ -10,10 +10,6 @@ namespace WindowsFormsAppGMmatos
             InitializeComponent();
         }
 
-        private void FormGenerale_Load(object sender, EventArgs e)
-        {
-        }
-
         private void Clients_Click(object sender, EventArgs e)
         {
             using (var dlg = new Formclient())

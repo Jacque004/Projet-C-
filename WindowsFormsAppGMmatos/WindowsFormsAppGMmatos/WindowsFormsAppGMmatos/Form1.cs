@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
 namespace WindowsFormsAppGMmatos
@@ -8,6 +10,21 @@ namespace WindowsFormsAppGMmatos
         public FormGenerale()
         {
             InitializeComponent();
+            ChargerLogo();
+        }
+
+        private void ChargerLogo()
+        {
+            var chemin = Path.Combine(Application.StartupPath, "Resources", "gmatos.png");
+            if (!File.Exists(chemin))
+            {
+                chemin = Path.Combine(Application.StartupPath, "gmatos.png");
+            }
+
+            if (File.Exists(chemin))
+            {
+                picLogo.Image = Image.FromFile(chemin);
+            }
         }
 
         private void Clients_Click(object sender, EventArgs e)

@@ -1,0 +1,13 @@
+<?php
+/**
+ * Copier ce fichier en config.local.php et adapter les valeurs.
+ * config.local.php ne doit PAS être versionné (voir .gitignore).
+ */
+return [
+    'db_host' => '127.0.0.1',
+    'db_name' => 'gmmatos',
+    'db_user' => 'gmmatos_app',
+    'db_pass' => 'CHANGE_ME_StrongPass!',
+    'api_key' => 'CHANGE_ME_ApiKey_32chars_min________',
+    'setup_token' => 'CHANGE_ME_SetupToken',
+];

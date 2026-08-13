@@ -1,6 +1,8 @@
 <?php
 require __DIR__ . '/config.php';
 
+require_api_key();
+
 $method = $_SERVER['REQUEST_METHOD'];
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 
@@ -32,37 +34,37 @@ try {
         respond(array_map('normalize_client', $rows));
     }
 
-    if ($method === 'POST') {
-        $data = json_body();
-        $nom = trim($data['nom'] ?? '');
-        $prenom = trim($data['prenom'] ?? '');
-        if ($nom === '' || $prenom === '') {
-            respond(['error' => 'Nom et prénom obligatoires'], 400);
-        }
-
-        $stmt = $pdo->prepare(
-            'INSERT INTO clients (nom, prenom, email, telephone, adresse) VALUES (?, ?, ?, ?, ?)'
-        );
-        $stmt->execute([
-            $nom,
-            $prenom,
-            trim($data['email'] ?? '') ?: null,
-            trim($data['telephone'] ?? '') ?: null,
-            trim($data['adresse'] ?? '') ?: null,
-        ]);
-
-        respond(['id' => (int) $pdo->lastInsertId()], 201);
-    }
-
-    if ($method === 'PUT') {
-        if (!$id) {
+    if ($method === 'POST' || $method === 'PUT') {
+        if ($method === 'PUT' && !$id) {
             respond(['error' => 'Id requis'], 400);
         }
+
         $data = json_body();
-        $nom = trim($data['nom'] ?? '');
-        $prenom = trim($data['prenom'] ?? '');
+        $nom = clamp_string($data['nom'] ?? '', 100);
+        $prenom = clamp_string($data['prenom'] ?? '', 100);
+        $email = clamp_string($data['email'] ?? '', 150);
+        $telephone = clamp_string($data['telephone'] ?? '', 30);
+        $adresse = clamp_string($data['adresse'] ?? '', 255);
+
         if ($nom === '' || $prenom === '') {
             respond(['error' => 'Nom et prénom obligatoires'], 400);
+        }
+        if (!valid_email($email === '' ? null : $email)) {
+            respond(['error' => 'Email invalide'], 400);
+        }
+
+        if ($method === 'POST') {
+            $stmt = $pdo->prepare(
+                'INSERT INTO clients (nom, prenom, email, telephone, adresse) VALUES (?, ?, ?, ?, ?)'
+            );
+            $stmt->execute([
+                $nom,
+                $prenom,
+                $email !== '' ? $email : null,
+                $telephone !== '' ? $telephone : null,
+                $adresse !== '' ? $adresse : null,
+            ]);
+            respond(['id' => (int) $pdo->lastInsertId()], 201);
         }
 
         $stmt = $pdo->prepare(
@@ -71,12 +73,11 @@ try {
         $stmt->execute([
             $nom,
             $prenom,
-            trim($data['email'] ?? '') ?: null,
-            trim($data['telephone'] ?? '') ?: null,
-            trim($data['adresse'] ?? '') ?: null,
+            $email !== '' ? $email : null,
+            $telephone !== '' ? $telephone : null,
+            $adresse !== '' ? $adresse : null,
             $id,
         ]);
-
         respond(['ok' => true]);
     }
 
@@ -91,5 +92,6 @@ try {
 
     respond(['error' => 'Méthode non supportée'], 405);
 } catch (Throwable $e) {
-    respond(['error' => $e->getMessage()], 500);
+    error_log('GMmatos clients: ' . $e->getMessage());
+    respond(['error' => 'Erreur serveur'], 500);
 }

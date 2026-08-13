@@ -28,21 +28,31 @@ Application de **gestion de matériel** (parc + clients) développée en **C# Wi
 
 1. Cloner le dépôt dans `C:\xampp\htdocs\Projet-C` (ou adapter l’URL de l’API).
 2. Démarrer **Apache** et **MySQL** dans le panneau XAMPP.
-3. Initialiser la base une fois :
-   - navigateur : `http://localhost/Projet-C/api/setup.php`
-   - ou import de `database/matos.sql` via phpMyAdmin
-4. Ouvrir `WindowsFormsAppGMmatos/WindowsFormsAppGMmatos/WindowsFormsAppGMmatos.sln` dans Visual Studio.
-5. Lancer avec **F5**.
+3. Copier `api/config.local.php.example` vers `api/config.local.php` et renseigner les secrets.
+4. Créer l’utilisateur MySQL applicatif : importer `database/secure_user.sql` (via root), puis `database/matos.sql`.
+5. Ouvrir la solution WinForms et aligner `ApiKey` dans `App.config` avec `api_key` de `config.local.php`.
+6. Lancer avec **F5**.
 
-## Configuration
+Setup BDD (localhost + token uniquement) :
+```
+http://localhost/Projet-C/api/setup.php?token=VOTRE_SETUP_TOKEN
+```
 
-L’URL de l’API est définie dans `App.config` :
+## Configuration / sécurité
+
+Secrets locaux dans `api/config.local.php` (non versionné) :
+
+- compte MySQL dédié `gmmatos_app` (pas root)
+- clé API (`X-Api-Key`) obligatoire sur `clients.php` / `materiel.php`
+- `setup.php` limité à 127.0.0.1 + `setup_token`
+- dossier `database/` bloqué par `.htaccess`
+
+Dans `App.config` :
 
 ```xml
 <add key="ApiBaseUrl" value="http://localhost/Projet-C/api/" />
+<add key="ApiKey" value="meme_valeur_que_config.local.php" />
 ```
-
-Les identifiants MySQL se configurent dans `api/config.php` (par défaut : `root` / mot de passe vide).
 
 ## Structure du projet
 
@@ -54,7 +64,9 @@ Projet-C/
 │   ├── config.php
 │   └── setup.php
 ├── database/
-│   └── matos.sql         # Création BDD + données démo
+│   ├── matos.sql         # Création BDD + données démo
+│   ├── secure_user.sql   # User MySQL applicatif
+│   └── .htaccess         # Accès web refusé
 └── WindowsFormsAppGMmatos/
     └── ...               # Application WinForms
         ├── Models/       # Client, Materiel

@@ -1,6 +1,8 @@
 <?php
 require __DIR__ . '/config.php';
 
+require_api_key();
+
 $method = $_SERVER['REQUEST_METHOD'];
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $etats = ['disponible', 'loue', 'maintenance', 'hors_service'];
@@ -34,49 +36,46 @@ try {
         respond(array_map('normalize_materiel', $rows));
     }
 
-    if ($method === 'POST') {
-        $data = json_body();
-        $reference = trim($data['reference'] ?? '');
-        $designation = trim($data['designation'] ?? '');
-        if ($reference === '' || $designation === '') {
-            respond(['error' => 'Référence et désignation obligatoires'], 400);
-        }
-
-        $etat = $data['etat'] ?? 'disponible';
-        if (!in_array($etat, $etats, true)) {
-            respond(['error' => 'État invalide'], 400);
-        }
-
-        $stmt = $pdo->prepare(
-            'INSERT INTO materiel (reference, designation, categorie, quantite, prix_jour, etat)
-             VALUES (?, ?, ?, ?, ?, ?)'
-        );
-        $stmt->execute([
-            $reference,
-            $designation,
-            trim($data['categorie'] ?? '') ?: null,
-            (int) ($data['quantite'] ?? 0),
-            (float) ($data['prix_jour'] ?? 0),
-            $etat,
-        ]);
-
-        respond(['id' => (int) $pdo->lastInsertId()], 201);
-    }
-
-    if ($method === 'PUT') {
-        if (!$id) {
+    if ($method === 'POST' || $method === 'PUT') {
+        if ($method === 'PUT' && !$id) {
             respond(['error' => 'Id requis'], 400);
         }
+
         $data = json_body();
-        $reference = trim($data['reference'] ?? '');
-        $designation = trim($data['designation'] ?? '');
+        $reference = clamp_string($data['reference'] ?? '', 50);
+        $designation = clamp_string($data['designation'] ?? '', 150);
+        $categorie = clamp_string($data['categorie'] ?? '', 80);
+        $quantite = (int) ($data['quantite'] ?? 0);
+        $prixJour = (float) ($data['prix_jour'] ?? 0);
+        $etat = $data['etat'] ?? 'disponible';
+
         if ($reference === '' || $designation === '') {
             respond(['error' => 'Référence et désignation obligatoires'], 400);
         }
-
-        $etat = $data['etat'] ?? 'disponible';
+        if ($quantite < 0 || $quantite > 100000) {
+            respond(['error' => 'Quantité invalide'], 400);
+        }
+        if ($prixJour < 0 || $prixJour > 100000) {
+            respond(['error' => 'Prix invalide'], 400);
+        }
         if (!in_array($etat, $etats, true)) {
             respond(['error' => 'État invalide'], 400);
+        }
+
+        if ($method === 'POST') {
+            $stmt = $pdo->prepare(
+                'INSERT INTO materiel (reference, designation, categorie, quantite, prix_jour, etat)
+                 VALUES (?, ?, ?, ?, ?, ?)'
+            );
+            $stmt->execute([
+                $reference,
+                $designation,
+                $categorie !== '' ? $categorie : null,
+                $quantite,
+                $prixJour,
+                $etat,
+            ]);
+            respond(['id' => (int) $pdo->lastInsertId()], 201);
         }
 
         $stmt = $pdo->prepare(
@@ -87,13 +86,12 @@ try {
         $stmt->execute([
             $reference,
             $designation,
-            trim($data['categorie'] ?? '') ?: null,
-            (int) ($data['quantite'] ?? 0),
-            (float) ($data['prix_jour'] ?? 0),
+            $categorie !== '' ? $categorie : null,
+            $quantite,
+            $prixJour,
             $etat,
             $id,
         ]);
-
         respond(['ok' => true]);
     }
 
@@ -108,5 +106,6 @@ try {
 
     respond(['error' => 'Méthode non supportée'], 405);
 } catch (Throwable $e) {
-    respond(['error' => $e->getMessage()], 500);
+    error_log('GMmatos materiel: ' . $e->getMessage());
+    respond(['error' => 'Erreur serveur'], 500);
 }

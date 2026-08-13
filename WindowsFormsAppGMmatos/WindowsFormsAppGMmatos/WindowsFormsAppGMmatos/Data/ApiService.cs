@@ -11,12 +11,25 @@ namespace WindowsFormsAppGMmatos.Data
 {
     public static class ApiService
     {
-        private static readonly HttpClient Http = new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(15)
-        };
+        private static readonly HttpClient Http = CreateClient();
 
         private static readonly JavaScriptSerializer Json = new JavaScriptSerializer();
+
+        private static HttpClient CreateClient()
+        {
+            var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(15)
+            };
+
+            var apiKey = ConfigurationManager.AppSettings["ApiKey"];
+            if (!string.IsNullOrWhiteSpace(apiKey))
+            {
+                client.DefaultRequestHeaders.Add("X-Api-Key", apiKey);
+            }
+
+            return client;
+        }
 
         private static string BaseUrl
         {
@@ -131,7 +144,7 @@ namespace WindowsFormsAppGMmatos.Data
                 return;
             }
 
-            string message = body;
+            string message = "Erreur API (" + (int)response.StatusCode + ")";
             try
             {
                 var err = Json.Deserialize<Dictionary<string, object>>(body);
@@ -142,16 +155,12 @@ namespace WindowsFormsAppGMmatos.Data
             }
             catch
             {
-                // keep raw body
+                // message générique conservé
             }
 
-            throw new InvalidOperationException(
-                "API (" + (int)response.StatusCode + "): " + message);
+            throw new InvalidOperationException(message);
         }
 
-        /// <summary>
-        /// Convertit les clés snake_case PHP (prix_jour) vers PascalCase C#.
-        /// </summary>
         private static string NormalizeKeys(string json)
         {
             return json
